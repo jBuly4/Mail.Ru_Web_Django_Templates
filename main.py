@@ -1,16 +1,76 @@
-# This is a sample Python script.
+""" Solutions """
+""" views.py """
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+from django.shortcuts import render
+
+def echo(request):
+    context = {
+        'get': request.GET,
+        'post': request.POST,
+        'meta': request.META
+    }
+    return render(request, 'echo.html', context=context)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+def filters(request):
+    return render(request, 'filters.html', context={
+        'a': request.GET.get('a', 1),
+        'b': request.GET.get('b', 1)
+    })
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def extend(request):
+    return render(request, 'extend.html', context={
+        'a': request.GET.get('a'),
+        'b': request.GET.get('b')
+    })
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+""" echo.html """
+<!--echo.html-->
+
+{% for k, v in get.items %}
+    get {{ k }}: {{ v }}
+{% endfor %}
+
+{% for k, v in post.items %}
+    post {{ k }}: {{ v }}
+{% endfor %}
+
+{% if meta.HTTP_X_PRINT_STATEMENT %}
+    statement is {{ meta.HTTP_X_PRINT_STATEMENT }}
+{% else %}
+    statement is empty
+{% endif %}
+
+
+""" extras.py """
+# extras.py
+
+from django import template
+
+register = template.Library()
+
+
+@register.filter
+def inc(value, arg):
+    return int(value) + int(arg)
+
+
+@register.simple_tag
+def division(a, b, to_int=False):
+    res = int(a) / int(b)
+    return int(res) if to_int else res
+
+
+""" extend.html """
+<!--extend.html-->
+
+{% extends "base.html" %}
+
+{% block block_a %}
+    {{ block.super }} {{ a }}
+{% endblock %}
+
+{% block block_b %}
+    {{ block.super }} {{ b }}
+{% endblock %}
